@@ -1,0 +1,16 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# input data, saved log, checkpoints
+data/
+input/
+saved/
+datasets/
+
+# editor, os cache directory
+.vscode/
