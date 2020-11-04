@@ -42,9 +42,10 @@ class Potsdam(Dataset):
         # Check if there's a label for this image. If so, load it.
         if os.path.exists(label_path):
             label = sio.loadmat(label_path)["gt"]
-            return torch.tensor(img), torch.tensor(label)
+            return torch.tensor(img).float(), torch.tensor(label)
         else:
-            return torch.tensor(img), None
+            # return torch.tensor(img), None
+            return torch.tensor(img).float()
     
     def __len__(self):
         # how many files are there???
