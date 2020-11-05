@@ -18,9 +18,16 @@ class Potsdam(Dataset):
         self.is_test = is_test        # train or test
         
         ## GET FILE NUMBERS FOR THE CURRENT SPLIT ##
-        file_list = os.path.join(self.data_path, self.split + ".txt")
-        file_list = tuple(open(file_list, "r"))
-        file_list = [id_.rstrip() for id_ in file_list]
+        if isinstance(self.split, list):
+            file_list = []
+            for sp in self.split:
+                filepath = os.path.join(self.data_path, sp + ".txt")
+                files = tuple(open(filepath, "r"))
+                file_list += [id_.rstrip() for id_ in files]
+        else:
+            filepath = os.path.join(self.data_path, self.split + ".txt")
+            files = tuple(open(filepath, "r"))
+            file_list = [id_.rstrip() for id_ in files]
         self.files = file_list  # list of image ids
         
     def __getitem__(self, idx):
@@ -40,7 +47,7 @@ class Potsdam(Dataset):
             img = self.transforms(**{"image": np.array(img)})["image"]
         
         # Check if there's a label for this image. If so, load it.
-        if os.path.exists(label_path):
+        if (os.path.exists(label_path)) and (self.is_test):
             label = sio.loadmat(label_path)["gt"]
             return torch.tensor(img).float(), torch.tensor(label)
         else:

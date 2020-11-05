@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from maskedconv import maskedConv2d
 
+
 class stem(nn.Module):
     ''' The convolutional stem (h)'''
     def __init__(self):
@@ -65,7 +66,7 @@ class decoder(nn.Module):
         
     def forward(self, x):
         x = self.conv(x)
-        x = F.interpolate(x, scale_factor=(2,2), mode='bilinear')
+        x = F.interpolate(x, scale_factor=(2,2), mode='bilinear', align_corners=False)
         return self.soft(x)
     
 class ARSegmentationNet(nn.Module):
@@ -76,10 +77,23 @@ class ARSegmentationNet(nn.Module):
         # channels, we rapidly get to an appalling number
         self.resblock1 = AR_residual_block(64)
         self.resblock2 = AR_residual_block(128)
-        self.decoder = decoder(256, 6)
+#         self.decoder = decoder(256, 3)
+        self.resblock3 = AR_residual_block(256)
+        self.resblock4 = AR_residual_block(512)
+        self.decoder = decoder(1024, 3)
         
     def forward(self, x, ordering):
         x = self.stem(x)
         x = self.resblock1(x, ordering)
         x = self.resblock2(x, ordering)
+        x = self.resblock3(x, ordering)
+        x = self.resblock4(x, ordering)
         return self.decoder(x)
+
+def init_weights(m):
+    if type(m) == nn.Conv2d:
+        torch.nn.init.xavier_uniform_(m.weight)
+        m.bias.data.fill_(0.01)
+    elif type(m) == maskedConv2d:
+        torch.nn.init.xavier_uniform_(m.weight)
+        m.bias.data.fill_(0.01)
