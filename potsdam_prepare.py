@@ -20,7 +20,9 @@ import scipy.io as sio
 # libtiff is all screwy on anaconda for some reason
 # so I am using skimage.external.tifffile instead
 # from libtiff import TIFF
-from skimage.external import tifffile
+# from skimage.external import tifffile # lmao this is deprecated too, 
+# but apparetly u can use tiffile directly
+import tifffile
 
 
 # data directories

@@ -42,3 +42,71 @@ def MI_loss(out_o1, out_o2, T=0):
     loss = (-p_i_j * (torch.log(p_i_j) - torch.log(p_i_mat) - torch.log(p_j_mat))).sum()
     
     return loss
+
+def edge_loss_4(output, image, beta=2):
+    
+    # edge penalty!!!
+    
+    # get the 4 directional gradients
+    grad_st = torch.zeros((image.shape[0], image.shape[2], image.shape[3], 4))
+    grad_st[:,:,:,0] = torch.sum(torch.abs(image - torch.roll(image,  1, 2)), dim=1)
+    grad_st[:,:,:,1] = torch.sum(torch.abs(image - torch.roll(image, -1, 2)), dim=1)
+    grad_st[:,:,:,2] = torch.sum(torch.abs(image - torch.roll(image,  1, 3)), dim=1)
+    grad_st[:,:,:,3] = torch.sum(torch.abs(image - torch.roll(image, -1, 3)), dim=1)
+    
+    # find out where there are class boundaries
+    labels = torch.argmax(output, 1)
+    label_diffs = torch.zeros((image.shape[0], image.shape[2], image.shape[3], 4))
+    label_diffs[:,:,:,0] = labels == torch.roll(labels,  1, 1)
+    label_diffs[:,:,:,1] = labels == torch.roll(labels, -1, 1)
+    label_diffs[:,:,:,2] = labels == torch.roll(labels,  1, 2)
+    label_diffs[:,:,:,3] = labels == torch.roll(labels, -1, 2)
+    
+    # no edge penalty at the edges!!
+    label_diffs[:, 0, :,:] = 0
+    label_diffs[:,-1, :,:] = 0
+    label_diffs[:, :, 0,:] = 0
+    label_diffs[:, :,-1,:] = 0
+    
+    edge_pen = grad_st * label_diffs
+    num_el = image.shape[0]*image.shape[1]*image.shape[2]*image.shape[3]
+    return beta*torch.sum(torch.exp(-1 * torch.mul(edge_pen, edge_pen)))/num_el
+
+def edge_loss_8(output, image, beta, K):
+    
+    # edge penalty!!!
+    
+    # get the 4 directional gradients
+    grad_st = torch.zeros((image.shape[0], image.shape[2], image.shape[3], 8))
+    grad_st[:,:,:,0] = torch.sum(torch.abs(image - torch.roll(image,  1, 2)), dim=1)
+    grad_st[:,:,:,1] = torch.sum(torch.abs(image - torch.roll(image, -1, 2)), dim=1)
+    grad_st[:,:,:,2] = torch.sum(torch.abs(image - torch.roll(image,  1, 3)), dim=1)
+    grad_st[:,:,:,3] = torch.sum(torch.abs(image - torch.roll(image, -1, 3)), dim=1)
+    grad_st[:,:,:,4] = torch.sum(torch.abs(image - torch.roll(image,  ( 1, 1), (2,3))), dim=1)
+    grad_st[:,:,:,5] = torch.sum(torch.abs(image - torch.roll(image,  ( 1,-1), (2,3))), dim=1)
+    grad_st[:,:,:,6] = torch.sum(torch.abs(image - torch.roll(image,  (-1, 1), (2,3))), dim=1)
+    grad_st[:,:,:,7] = torch.sum(torch.abs(image - torch.roll(image,  (-1,-1), (2,3))), dim=1)
+    
+    grad_st = grad_st / 255
+    
+    # find out where there are class boundaries
+    labels = torch.argmax(output, 1)
+    label_diffs = torch.zeros((image.shape[0], image.shape[2], image.shape[3], 8))
+    label_diffs[:,:,:,0] = labels == torch.roll(labels,  1, 1)
+    label_diffs[:,:,:,1] = labels == torch.roll(labels, -1, 1)
+    label_diffs[:,:,:,2] = labels == torch.roll(labels,  1, 2)
+    label_diffs[:,:,:,3] = labels == torch.roll(labels, -1, 2)
+    label_diffs[:,:,:,4] = labels == torch.roll(labels,  ( 1, 1), (1,2))
+    label_diffs[:,:,:,5] = labels == torch.roll(labels,  ( 1,-1), (1,2))
+    label_diffs[:,:,:,6] = labels == torch.roll(labels,  (-1, 1), (1,2))
+    label_diffs[:,:,:,7] = labels == torch.roll(labels,  (-1,-1), (1,2))
+    
+    # no edge penalty at the edges!!
+    label_diffs[:, 0, :,:] = 0
+    label_diffs[:,-1, :,:] = 0
+    label_diffs[:, :, 0,:] = 0
+    label_diffs[:, :,-1,:] = 0
+    
+    edge_pen = grad_st * label_diffs
+    num_el = image.shape[0]*image.shape[1]*image.shape[2]*image.shape[3]
+    return beta*torch.sum(torch.exp(-1 * torch.mul(edge_pen, edge_pen)/K))/num_el
