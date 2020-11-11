@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from maskedconv import maskedConv2d
+from maskedconv import maskedConv2d, shiftedMaskedConv2d
 from attention_layer import attentionLayer
 
 
@@ -26,7 +26,7 @@ class AR_residual_block(nn.Module):
         self.in_channels = in_channels
         
         # first sub-block
-        self.conv1 = maskedConv2d(in_channels, 2*in_channels, kernel_size=3, padding=1)
+        self.conv1 = shiftedMaskedConv2d(in_channels, 2*in_channels, kernel_size=3, padding=0)
         # masked conv is equivalent to regular conv for 1x1 kernel so I'll just use that
         self.conv2 = nn.Conv2d(2*in_channels, 2*in_channels, kernel_size=1)
         

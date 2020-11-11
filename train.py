@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm
 
 from dataloader import Potsdam, PotsdamDataLoader
-from model import ARSegmentationNet2, init_weights
+from model import ARSegmentationNet, init_weights
 from loss import MI_loss
 
 
@@ -21,17 +21,16 @@ if __name__ == "__main__":
     # get the dataloader
     path = '/mnt/D2/Data/potsdam/preprocessed/'
     train_dataset = Potsdam(path, split=['unlabelled_train', 'labelled_train'])
-    training_loader = PotsdamDataLoader(train_dataset, batch_size=5)
+    training_loader = PotsdamDataLoader(train_dataset, batch_size=20)
     
 #     # get validation dataloader
 #     validation_dataset = Potsdam(path, split='labelled_train')
 #     validation_loader = PotsdamDataLoader(train_dataset, batch_size=8)
     
     # define model, loss, optimzer, learning rate scheduler
-    model = ARSegmentationNet2().to(device)
+    model = ARSegmentationNet().to(device)
     model.apply(init_weights)
     criterion = MI_loss
-#     criterion2 = edge_loss_8
     optimizer = torch.optim.Adam(model.parameters(), lr = 2e-5)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.5)
     
@@ -48,14 +47,7 @@ if __name__ == "__main__":
         ## TRAIN ##
         for batch_idx, data in enumerate(tqdm(training_loader)):
             
-#             print(f"Training on batch number {batch_idx}")
-            
             inputs = data.to(device)
-            
-            # changed the dataloader so it doesn't return labels
-            # will need to fix this later so I can do validation
-            # inputs = data[0].to(device)
-            # labels = data[1].to(device)
             
             # randomly choose two orderings
             o1 = np.random.choice(orderings)
@@ -67,27 +59,19 @@ if __name__ == "__main__":
             
             # compute the MI loss between the two outputs
             # loss = criterion(out1, out2) # no spatial invariance (T=0)
-            loss = criterion(out1, out2, 1) # with spatial invariance (T=1)
-#             loss2 = criterion2(out1, inputs, 0.2, K[e])
-#             loss3 = criterion2(out2, inputs, 0.2, K[e])
-            
-#             loss = loss1 + loss2 + loss3
-            
+            loss = criterion(out1, out2, 0) # with spatial invariance (T=1)
+
             # optimize
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             
             losses.append(loss.item())
-        
-#         ## VALIDATE ##
-#         for batch_idx, data in enumerate(validation_loader):
             
-        
         # update lr
         scheduler.step()
     
-    torch.save(model.state_dict(), './model_01.pth')
+    torch.save(model.state_dict(), './model_02.pth')
     
     losses = np.array(losses)
-    np.save("losses_01.npy", losses)
+    np.save("losses_02.npy", losses)

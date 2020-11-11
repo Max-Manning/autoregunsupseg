@@ -56,15 +56,15 @@ class shiftedMaskedConv2d(Conv2d):
 
     '''
     
-    def __init__(self, kernel_size, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         
         # initialize the conv2d base class
-        super().__init__(*args, kernel_size=kernel_size, padding=0, **kwargs)
+        super().__init__(*args, **kwargs) # make sure padding=0 !!!
         
         # Get the half kernel width for padding. We do the padding explicitly in the
         # forward() method since it depends on the selected ordering. For this reason,
         # the 'padding' value of the parent Conv2d class is set to 0.
-        self.pw = kernel_size//2
+        self.pw = kwargs['kernel_size']//2
         
         # create a mask
         self.register_buffer('mask', self.weight.data.clone())
@@ -89,7 +89,7 @@ class shiftedMaskedConv2d(Conv2d):
         # transform the convolution mask, and apply it to the convolution weights
         if ordering == 1:
             x = F.pad(x, (self.pw,self.pw,self.pw+1,self.pw-1))
-            self.weight.data *= self.mask
+            print(x.shape)
         elif ordering == 2:
             x = F.pad(x, (self.pw+1,self.pw-1,self.pw,self.pw))
             self.weight.data *= torch.flip(self.mask, [3])
@@ -111,6 +111,8 @@ class shiftedMaskedConv2d(Conv2d):
         elif ordering == 8:
             x = F.pad(x, (self.pw-1,self.pw+1,self.pw,self.pw))
             self.weight.data *= torch.flip(torch.rot90(self.mask, 3, [2,3]), [3])
+        else:
+            x = F.pad(x, (self.pw,self.pw,self.pw,self.pw))
         
         # perform the convolution
         return super().forward(x)
