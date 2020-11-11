@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm
 
 from dataloader import Potsdam, PotsdamDataLoader
-from model import ARSegmentationNet, init_weights
+from model import ARSegmentationNet2, init_weights
 from loss import MI_loss
 
 
@@ -21,14 +21,14 @@ if __name__ == "__main__":
     # get the dataloader
     path = '/mnt/D2/Data/potsdam/preprocessed/'
     train_dataset = Potsdam(path, split=['unlabelled_train', 'labelled_train'])
-    training_loader = PotsdamDataLoader(train_dataset, batch_size=20)
+    training_loader = PotsdamDataLoader(train_dataset, batch_size=10)
     
 #     # get validation dataloader
 #     validation_dataset = Potsdam(path, split='labelled_train')
 #     validation_loader = PotsdamDataLoader(train_dataset, batch_size=8)
     
     # define model, loss, optimzer, learning rate scheduler
-    model = ARSegmentationNet().to(device)
+    model = ARSegmentationNet2().to(device)
     model.apply(init_weights)
     criterion = MI_loss
     optimizer = torch.optim.Adam(model.parameters(), lr = 2e-5)

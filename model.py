@@ -40,7 +40,7 @@ class AR_residual_block(nn.Module):
         
     def forward(self, x, ordering):
         # first sub-block
-        residual = F.pad(x, (0,0,0, 0, 0, self.in_channels))
+        residual = F.pad(x, (0,0,0,0,0, self.in_channels))
         x = F.relu(self.conv1(x, ordering))
         x = F.relu(self.conv2(x))
         x = x + residual
@@ -74,6 +74,7 @@ class decoder(nn.Module):
         return self.soft(x)
     
 class ARSegmentationNet(nn.Module):
+    '''2 residual blocks, no attention'''
     def __init__(self):
         super().__init__()
         self.stem = stem()
@@ -82,33 +83,66 @@ class ARSegmentationNet(nn.Module):
         self.resblock1 = AR_residual_block(64)
         self.resblock2 = AR_residual_block(128)
         self.decoder = decoder(256, 6)
-#         self.resblock3 = AR_residual_block(256)
-#         self.resblock4 = AR_residual_block(512)
-#         self.decoder = decoder(1024, 3)
         
     def forward(self, x, ordering):
         x = self.stem(x)
         x = self.resblock1(x, ordering)
         x = self.resblock2(x, ordering)
-#         x = self.resblock3(x, ordering)
-#         x = self.resblock4(x, ordering)
         return self.decoder(x)
 
 class ARSegmentationNet2(nn.Module):
+    '''2 residual blocks, with attention'''
     def __init__(self):
         super().__init__()
         self.stem = stem(stride=2)
         self.attn = attentionLayer(64, 64, 64, 50, 50)
-        self.resblock1 = AR_residual_block(64)
-        self.resblock2 = AR_residual_block(128)
-        self.decoder = decoder(256, 3, upsample=4)
+        self.resblock1 = AR_residual_block(128)
+        self.resblock2 = AR_residual_block(256)
+        self.decoder = decoder(512, 3, upsample=4)
         
     def forward(self, x, ordering):
         x = self.stem(x)
         x = self.attn(x, ordering)
         x = self.resblock1(x, ordering)
         x = self.resblock2(x, ordering)
+        return self.decoder(x)
 
+class ARSegmentationNet3(nn.Module):
+    '''3 residual blocks, with attention'''
+    def __init__(self):
+        super().__init__()
+        self.stem = stem(stride=2)
+        self.attn = attentionLayer(64, 64, 64, 50, 50)
+        self.resblock1 = AR_residual_block(128)
+        self.resblock2 = AR_residual_block(256)
+        self.resblock3 = AR_residual_block(512)
+        self.decoder = decoder(1024, 3, upsample=4)
+        
+    def forward(self, x, ordering):
+        x = self.stem(x)
+        x = self.attn(x, ordering)
+        x = self.resblock1(x, ordering)
+        x = self.resblock2(x, ordering)
+        x = self.resblock3(x, ordering)
+        return self.decoder(x)
+
+class ARSegmentationNet4(nn.Module):
+    '''4 residual blocks, no attention'''
+    def __init__(self):
+        super().__init__()
+        self.stem = stem()
+        self.resblock1 = AR_residual_block(64)
+        self.resblock2 = AR_residual_block(128)
+        self.resblock3 = AR_residual_block(256)
+        self.resblock4 = AR_residual_block(512)
+        self.decoder = decoder(1024, 3)
+        
+    def forward(self, x, ordering):
+        x = self.stem(x)
+        x = self.resblock1(x, ordering)
+        x = self.resblock2(x, ordering)
+        x = self.resblock3(x, ordering)
+        x = self.resblock4(x, ordering)
         return self.decoder(x)
 
 def init_weights(m):

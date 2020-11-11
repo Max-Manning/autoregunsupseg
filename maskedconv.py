@@ -3,8 +3,9 @@ from torch.nn import Conv2d
 import torch.nn.functional as F
 
 class maskedConv2d(Conv2d):
-    ''' MASKED CONVOLUTION '''
-    
+    ''' 
+    SIMPLE MASKED CONVOLUTION
+    '''
     def __init__(self, *args, **kwargs):
         
         # initialize the conv2d base class
@@ -29,7 +30,9 @@ class maskedConv2d(Conv2d):
         
         if ordering == 0 (or anything else) no mask is applied. Use this for inference.
         '''
-
+        
+        # depending on the ordering, transform the convolution mask and apply it to
+        # the convolution weights
         if ordering == 1:
             self.weight.data *= self.mask
         elif ordering == 2:
@@ -47,7 +50,7 @@ class maskedConv2d(Conv2d):
         elif ordering == 8:
             self.weight.data *= torch.flip(torch.rot90(self.mask, 3, [2,3]), [3])
         
-        
+        # perform the convolution
         return super().forward(x)
 
 class shiftedMaskedConv2d(Conv2d):
@@ -89,7 +92,7 @@ class shiftedMaskedConv2d(Conv2d):
         # transform the convolution mask, and apply it to the convolution weights
         if ordering == 1:
             x = F.pad(x, (self.pw,self.pw,self.pw+1,self.pw-1))
-            print(x.shape)
+            self.weight.data *= self.mask
         elif ordering == 2:
             x = F.pad(x, (self.pw+1,self.pw-1,self.pw,self.pw))
             self.weight.data *= torch.flip(self.mask, [3])
