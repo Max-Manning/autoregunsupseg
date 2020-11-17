@@ -15,12 +15,14 @@ class maskedConv2d(Conv2d):
         self.register_buffer('mask', self.weight.data.clone())
         
         # get the size of the weights
-        _,d,h,w = self.weight.size()
+        b,d,h,w = self.weight.size()
         
         # make the default mask
         # ordering is applied in the forward method so we don't need
         # to worry about it here
-        self.mask[:,:,h//2, w//2:] = 0
+        self.mask[:,:,:,:]=1 # set all the mask values to 1
+        # self.mask[:,:,h//2, w//2:] = 0 # no access to center (current) pixel
+        self.mask[:,:,h//2, w//2+1:] = 0 # allow access to center (current) pixel
         self.mask[:,:,h//2 + 1:,:] = 0
         
     def forward(self, x, ordering):
@@ -34,21 +36,21 @@ class maskedConv2d(Conv2d):
         # depending on the ordering, transform the convolution mask and apply it to
         # the convolution weights
         if ordering == 1:
-            self.weight.data *= self.mask
+            self.weight.data *= self.mask # no change
         elif ordering == 2:
-            self.weight.data *= torch.flip(self.mask, [3])
+            self.weight.data *= torch.flip(torch.rot90(self.mask, 1, [2,3]), [2]) # CCW 90, flip V
         elif ordering == 3:
-            self.weight.data *= torch.rot90(self.mask, 1, [2,3])
+            self.weight.data *= torch.flip(self.mask, [3]) # flip H
         elif ordering == 4:
-            self.weight.data *= torch.flip(torch.rot90(self.mask, 1, [2,3]), [2])
+            self.weight.data *= torch.rot90(self.mask, 3, [2,3]) # CCW 270
         elif ordering == 5:
-            self.weight.data *= torch.rot90(self.mask, 2, [2,3])
+            self.weight.data *= torch.rot90(self.mask, 1, [2,3]) # CCW 90
         elif ordering == 6:
-            self.weight.data *= torch.flip(torch.rot90(self.mask, 2, [2,3]), [3])
+            self.weight.data *= torch.flip(self.mask, [2])# flip V
         elif ordering == 7:
-            self.weight.data *= torch.rot90(self.mask, 3, [2,3])
+            self.weight.data *= torch.rot90(self.mask, 2, [2,3]) # CCW 180
         elif ordering == 8:
-            self.weight.data *= torch.flip(torch.rot90(self.mask, 3, [2,3]), [3])
+            self.weight.data *= torch.flip(torch.rot90(self.mask, 3, [2,3]), [2]) # CCW 270, flip V
         
         # perform the convolution
         return super().forward(x)
@@ -58,7 +60,6 @@ class shiftedMaskedConv2d(Conv2d):
     SHIFTED MASKED CONVOLUTION
 
     '''
-    
     def __init__(self, *args, **kwargs):
         
         # initialize the conv2d base class
@@ -78,8 +79,10 @@ class shiftedMaskedConv2d(Conv2d):
         # make the default mask
         # ordering is applied in the forward method so we don't need
         # to worry about it here
-        self.mask[:,:,h//2 + 1, w//2:] = 0
-        self.mask[:,:,h//2 + 2:,:] = 0
+        
+        self.mask[:,:,:,:]=1 # set all the mask values to 1
+        # self.mask[:,:,h//2 + self.pw, w//2:] = 0 # no access to center (current) pixel
+        self.mask[:,:,h//2 + self.pw, w//2+1:] = 0 # allow access to center (current) pixel
         
     def forward(self, x, ordering):
         ''' 
@@ -91,29 +94,29 @@ class shiftedMaskedConv2d(Conv2d):
         # depending on the ordering, apply the appropriate padding to the input, 
         # transform the convolution mask, and apply it to the convolution weights
         if ordering == 1:
-            x = F.pad(x, (self.pw,self.pw,self.pw+1,self.pw-1))
-            self.weight.data *= self.mask
+            x = F.pad(x, (self.pw,self.pw,2*self.pw,0)) # pad top
+            self.weight.data *= self.mask # no change
         elif ordering == 2:
-            x = F.pad(x, (self.pw+1,self.pw-1,self.pw,self.pw))
-            self.weight.data *= torch.flip(self.mask, [3])
+            x = F.pad(x, (2*self.pw,0,self.pw,self.pw)) # pad left
+            self.weight.data *= torch.flip(torch.rot90(self.mask, 1, [2,3]), [2]) # CCW 90, flip V
         elif ordering == 3:
-            x = F.pad(x, (self.pw,self.pw,self.pw+1,self.pw-1))
-            self.weight.data *= torch.rot90(self.mask, 1, [2,3])
+            x = F.pad(x, (2*self.pw,0,self.pw,self.pw)) # pad top
+            self.weight.data *= torch.flip(self.mask, [3]) # flip H
         elif ordering == 4:
-            x = F.pad(x, (self.pw-1,self.pw+1,self.pw,self.pw))
-            self.weight.data *= torch.flip(torch.rot90(self.mask, 1, [2,3]), [2])
+            x = F.pad(x, (0,2*self.pw,self.pw,self.pw)) # pad right
+            self.weight.data *= torch.rot90(self.mask, 3, [2,3]) # CCW 270
         elif ordering == 5:
-            x = F.pad(x, (self.pw+1,self.pw-1,self.pw,self.pw))
-            self.weight.data *= torch.rot90(self.mask, 2, [2,3])
+            x = F.pad(x, (2*self.pw,0,self.pw,self.pw)) # pad left
+            self.weight.data *= torch.rot90(self.mask, 1, [2,3]) # CCW 90
         elif ordering == 6:
-            x = F.pad(x, (self.pw,self.pw,self.pw-1,self.pw+1))
-            self.weight.data *= torch.flip(torch.rot90(self.mask, 2, [2,3]), [3])
+            x = F.pad(x, (self.pw,self.pw,0,2*self.pw)) # pad bottom
+            self.weight.data *= torch.flip(self.mask, [2])# flip V
         elif ordering == 7:
-            x = F.pad(x, (self.pw,self.pw,self.pw-1,self.pw+1))
-            self.weight.data *= torch.rot90(self.mask, 3, [2,3])
+            x = F.pad(x, (self.pw,self.pw,0,2*self.pw)) # pad bottom
+            self.weight.data *= torch.rot90(self.mask, 2, [2,3]) # CCW 180
         elif ordering == 8:
-            x = F.pad(x, (self.pw-1,self.pw+1,self.pw,self.pw))
-            self.weight.data *= torch.flip(torch.rot90(self.mask, 3, [2,3]), [3])
+            x = F.pad(x, (0,2*self.pw,self.pw,self.pw)) # pad right
+            self.weight.data *= torch.flip(torch.rot90(self.mask, 3, [2,3]), [2]) # CCW 270, flip V
         else:
             x = F.pad(x, (self.pw,self.pw,self.pw,self.pw))
         

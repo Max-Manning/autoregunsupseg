@@ -43,6 +43,9 @@ def MI_loss(out_o1, out_o2, T=0):
     
     return loss
 
+
+## note: ignore the edge losses, they're not related to the paper implementation
+
 def edge_loss_4(output, image, beta=2):
     
     # edge penalty!!!

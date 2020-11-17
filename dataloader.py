@@ -43,8 +43,9 @@ class Potsdam(Dataset):
         img = np.transpose(img, (2,0,1))
         
         # apply transforms if there are any
-        if self.transforms:
-            img = self.transforms(**{"image": np.array(img)})["image"]
+        # may need this later for colour jitter/ random flip augmentation experiment
+        #if self.transforms:
+        #    img = self.transforms(x)
         
         # Check if there's a label for this image. If so, load it.
         if (os.path.exists(label_path)) and (self.is_test):
