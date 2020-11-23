@@ -2,46 +2,125 @@ import numpy as np
 import torch 
 from tqdm import tqdm
 import pickle
+import argparse
 from scipy.optimize import linear_sum_assignment as linear_assignment
 
-from dataloader import Potsdam, PotsdamDataLoader
-from model import ARSegmentationNet3, init_weights
+from datasets.dataloader_potsdam import Potsdam, PotsdamDataLoader
+from datasets.dataloader_cocostuff import get_coco_dataloader
+from model import ARSegmentationNet2, init_weights
 from loss import MI_loss
 
+def parse_args():
 
-if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Autoregressive Unsupervised Image Segmentation")
     
-    '''SIMPLE TRAINING SCRIPT'''
-    
-    if torch.cuda.is_available():
-        device = torch.device("cuda:0")
-        print("running on the GPU")
+    parser.add_argument(
+        '--dataset',
+        required=True,
+        choices=['Potsdam', 'Potsdam3', 'CocoStuff3', 'CocoStuff15'],
+        help='''Which dataset to use. Choose from 'Potsdam', 'Potsdam3',
+        'CocoStuff3' or 'CocoStuff15'. ''')
+    parser.add_argument(
+        '--output',
+        required=True,
+        type=str,
+        help='''Base name for the output files.''')
+    parser.add_argument(
+        '--batch_size',
+        default=10,
+        type=int,
+        help='Batch size.')
+    parser.add_argument(
+        '--learning_rate',
+        default=2e-5,
+        type=float,
+        help='Learning rate.')
+    parser.add_argument(
+        '--spatial_invariance',
+        default=1,
+        type=int,
+        help='Spatial invariance for the MI loss.')
+    parser.add_argument(
+        '--attention',
+        type=bool,
+        default=False,
+        help='Whether to use an attention block.')
+    parser.add_argument(
+        '--epochs',
+        type=int,
+        default=10,
+        help='Number of training epochs.')
+    parser.add_argument(
+        '--num_res_layers',
+        type=int,
+        default=2,
+        choices=[1,2,3,4],
+        help='Number of residual layers in the autoregressive encoder.')
+
+    return parser.parse_args()
+
+def main(ARGS):
+
+    if ARGS.dataset == 'Potsdam':
+        # get the dataloader
+        path = '/mnt/D2/Data/potsdam/preprocessed/'
+        train_dataset = Potsdam(path, coarse_labels=False, split=['unlabelled_train', 'labelled_train'])
+        training_loader = PotsdamDataLoader(train_dataset, batch_size=ARGS.batch_size)
+        # get validation dataloader: using 'labelled test' split
+        validation_dataset = Potsdam(path, coarse_labels=False, split='labelled_test', is_test=True)
+        validation_loader = PotsdamDataLoader(validation_dataset, batch_size=ARGS.batch_size)
+        in_channels = 4
+        num_classes = 6
+        
+    elif ARGS.dataset == 'Potsdam3':
+        # get the dataloader
+        path = '/mnt/D2/Data/potsdam/preprocessed/'
+        train_dataset = Potsdam(path, coarse_labels=True, split=['unlabelled_train', 'labelled_train'])
+        training_loader = PotsdamDataLoader(train_dataset, batch_size=ARGS.batch_size)
+        # get validation dataloader: using 'labelled test' split
+        validation_dataset = Potsdam(path, coarse_labels=True, split='labelled_test', is_test=True)
+        validation_loader = PotsdamDataLoader(validation_dataset, batch_size=ARGS.batch_size)
+        in_channels = 4
+        num_classes = 3
+        
+    elif ARGS.dataset == 'CocoStuff15':
+        training_loader = get_coco_dataloader(ARGS.batch_size, version='CocoStuff15', split='train')
+        validation_loader = get_coco_dataloader(ARGS.batch_size, version='CocoStuff15', split='val')
+        in_channels = 3
+        num_classes = 15
+        
+    elif ARGS.dataset == 'CocoStuff3':
+        training_loader = get_coco_dataloader(ARGS.batch_size, version='CocoStuff3', split='train')
+        validation_loader = get_coco_dataloader(ARGS.batch_size, version='CocoStuff3', split='val')
+        in_channels = 3
+        num_classes = 3
+        
     else:
-        device = torch.device("cpu")
-        print("running on the CPU")
-
-    # get the dataloader
-    path = '/mnt/D2/Data/potsdam/preprocessed/'
-    train_dataset = Potsdam(path, split=['unlabelled_train', 'labelled_train'])
-    training_loader = PotsdamDataLoader(train_dataset, batch_size=10)
-    
-    # get validation dataloader: using 'labelled test' split
-    validation_dataset = Potsdam(path, split='labelled_test', is_test=True)
-    validation_loader = PotsdamDataLoader(validation_dataset, batch_size=10)
-    
-    # define model, loss, optimzer, learning rate scheduler
-    model = ARSegmentationNet3().to(device)
+        raise ValueError("""Incorrect dataset. Please choose one of:
+                'Potsdam', 'Potsdam3', 'CocoStuff15', 'CocoStuff3'. """)
+        
+    # define model, loss, optimzer
+    if ARGS.num_res_layers == 1:
+        model = ARSegmentationNet1(in_channels=in_channels, num_classes=num_classes).to(device)
+    elif ARGS.num_res_layers == 2:
+        model = ARSegmentationNet2(in_channels=in_channels, num_classes=num_classes).to(device)
+    elif ARGS.num_res_layers == 3:
+        model = ARSegmentationNet3(in_channels=in_channels, num_classes=num_classes).to(device)
+    elif ARGS.num_res_layers == 4:
+        model = ARSegmentationNet4(in_channels=in_channels, num_classes=num_classes).to(device)
     model.apply(init_weights)
-    criterion = MI_loss
-    optimizer = torch.optim.Adam(model.parameters(), lr = 2e-5)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.5)
     
+    criterion = MI_loss
+    optimizer = torch.optim.Adam(model.parameters(), lr = ARGS.learning_rate)
+    
+    # the set of orderings to choose from
     orderings = np.arange(1,9)
     
     losses_train = []
     match_matrices = []
     
-    epochs = 10
+    epochs = ARGS.epochs
     for e in range(epochs):
         
         print(f"Starting epoch {e + 1}")
@@ -61,7 +140,7 @@ if __name__ == "__main__":
             
             # compute the MI loss between the two outputs
             # loss = criterion(out1, out2) # no spatial invariance (T=0)
-            loss = criterion(out1, out2, 1) # with spatial invariance (T=1)
+            loss = criterion(out1, out2, ARGS.spatial_invariance) # with spatial invariance (T=1)
 
             # optimize
             optimizer.zero_grad()
@@ -70,7 +149,7 @@ if __name__ == "__main__":
             
             losses_train.append(loss.item())
         
-        confusion_matrix = np.zeros((3,3))
+        confusion_matrix = np.zeros((num_classes, num_classes))
         print("Validating ...")
         
         ## VALIDATE ##
@@ -84,11 +163,6 @@ if __name__ == "__main__":
                 # flatten the model predictions and ground truth labels
                 labels = data[1].detach().numpy().flatten()
                 preds = np.argmax(outputs.cpu().detach().numpy(), axis=1).flatten()
-                
-                # turn potsdam-6 labels into potsdam-3 labels
-                labels[labels == 4] = 0 # merge road and cars classes
-                labels[labels == 5] = 1 # merge buildings and clutter classes
-                labels[labels == 3] = 2 # merge vegetation and trees classes
                 
                 # update the confusion matrix. Each pixel i has predicted label preds[i]
                 # and ground truth label labels[i]
@@ -110,15 +184,30 @@ if __name__ == "__main__":
             
         print(f"Epoch {e + 1} pixel accuracy: {accuracy*100:.2f} %")    
         
-        # update lr
-        scheduler.step()
+    
+    model_weights_svname = "saved/" + ARGS.output + ".pth"
+    confusion_matrix_svname = "saved/" + ARGS.output + "_confusion_matrix.pkl"
+    loss_svname = "saved/" + ARGS.output + "_loss.npy"
     
     # save model weights and results
-    f = open("saved/model_09_dist.pkl","wb")
+    f = open(confusion_matrix_svname,"wb")
     pickle.dump(match_matrices,f)
     f.close()
     
-    torch.save(model.state_dict(), './saved/model_09.pth')
+    torch.save(model.state_dict(), model_weights_svname)
     
     losses_train = np.array(losses_train)
-    np.save("./saved/losses_09.npy", losses_train)
+    np.save(loss_svname, losses_train)
+
+if __name__ == "__main__":
+    
+    if torch.cuda.is_available():
+        device = torch.device("cuda:0")
+    else:
+        device = torch.device("cpu")
+        print("running on the CPU")
+    
+    ARGS = parse_args()
+    main(ARGS)
+    
+    

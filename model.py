@@ -4,11 +4,20 @@ import torch.nn.functional as F
 from maskedconv import maskedConv2d, shiftedMaskedConv2d
 from attention_layer import attentionLayer
 
+def init_weights(m):
+    '''use apply xavier initialization on model weights'''
+    if type(m) == nn.Conv2d:
+        torch.nn.init.xavier_uniform_(m.weight)
+        m.bias.data.fill_(0.01)
+    elif type(m) == maskedConv2d:
+        torch.nn.init.xavier_uniform_(m.weight)
+        m.bias.data.fill_(0.01)
+
 class stem(nn.Module):
     ''' The convolutional stem (h)'''
-    def __init__(self, stride=1):
+    def __init__(self, in_channels=4, stride=1):
         super().__init__()
-        self.conv = nn.Conv2d(4, 64, kernel_size=3, padding=1, stride=stride) # potsdam RGBIR: 4 input channels
+        self.conv = nn.Conv2d(in_channels, 64, kernel_size=3, padding=1, stride=stride) # potsdam RGBIR: 4 input channels
         self.bn = nn.BatchNorm2d(64)
         self.pool = nn.MaxPool2d(kernel_size=(3,3), stride=2, padding=1)
         
@@ -69,7 +78,7 @@ class decoder(nn.Module):
         x = F.interpolate(x, scale_factor=(self.upsample,self.upsample), \
                           mode='bilinear', align_corners=False)
         return self.soft(x)
-    
+
 class ARSegmentationNet(nn.Module):
     '''2 residual blocks, no attention'''
     def __init__(self):
@@ -87,32 +96,44 @@ class ARSegmentationNet(nn.Module):
         x = self.resblock2(x, ordering)
         return self.decoder(x)
 
-class ARSegmentationNet2(nn.Module):
-    '''2 residual blocks, with attention'''
-    def __init__(self):
+    
+class ARSegmentationNet1(nn.Module):
+    '''1 residual block, no attention'''
+    def __init__(self, in_channels=3, num_classes=3):
         super().__init__()
-        self.stem = stem(stride=2)
+        self.stem = stem(in_channels=in_channels)
         self.resblock1 = AR_residual_block(64)
-        self.attn = attentionLayer(128, 64, 64, 50, 50)
-        self.resblock2 = AR_residual_block(128)
-        self.decoder = decoder(256, 3, upsample=4)
+        self.decoder = decoder(128, num_classes)
         
     def forward(self, x, ordering):
         x = self.stem(x)
         x = self.resblock1(x, ordering)
-        x = self.attn(x, ordering)
+        return self.decoder(x)
+    
+class ARSegmentationNet2(nn.Module):
+    '''2 residual blocks, no attention'''
+    def __init__(self, in_channels=3, num_classes=3):
+        super().__init__()
+        self.stem = stem(in_channels=in_channels)
+        self.resblock1 = AR_residual_block(64)
+        self.resblock2 = AR_residual_block(128)
+        self.decoder = decoder(256, num_classes)
+        
+    def forward(self, x, ordering):
+        x = self.stem(x)
+        x = self.resblock1(x, ordering)
         x = self.resblock2(x, ordering)
         return self.decoder(x)
-
+    
 class ARSegmentationNet3(nn.Module):
     '''3 residual blocks, no attention'''
-    def __init__(self):
+    def __init__(self, in_channels=3, num_classes=3):
         super().__init__()
-        self.stem = stem()
+        self.stem = stem(in_channels=in_channels)
         self.resblock1 = AR_residual_block(64)
         self.resblock2 = AR_residual_block(128)
         self.resblock3 = AR_residual_block(256)
-        self.decoder = decoder(512, 3)
+        self.decoder = decoder(512, num_classes)
         
     def forward(self, x, ordering):
         x = self.stem(x)
@@ -120,12 +141,24 @@ class ARSegmentationNet3(nn.Module):
         x = self.resblock2(x, ordering)
         x = self.resblock3(x, ordering)
         return self.decoder(x)
+    
+class ARSegmentationNet4(nn.Module):
+    '''4 residual blocks, no attention'''
+    def __init__(self, in_channels=3, num_classes=3):
+        super().__init__()
+        self.stem = stem(in_channels=in_channels)
+        self.resblock1 = AR_residual_block(64)
+        self.resblock2 = AR_residual_block(128)
+        self.resblock3 = AR_residual_block(256)
+        self.resblock4 = AR_residual_block(512)
+        self.decoder = decoder(1024, num_classes)
+        
+    def forward(self, x, ordering):
+        x = self.stem(x)
+        x = self.resblock1(x, ordering)
+        x = self.resblock2(x, ordering)
+        x = self.resblock3(x, ordering)
+        x = self.resblock4(x, ordering)
+        return self.decoder(x)
 
 
-def init_weights(m):
-    if type(m) == nn.Conv2d:
-        torch.nn.init.xavier_uniform_(m.weight)
-        m.bias.data.fill_(0.01)
-    elif type(m) == maskedConv2d:
-        torch.nn.init.xavier_uniform_(m.weight)
-        m.bias.data.fill_(0.01)
