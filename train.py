@@ -7,7 +7,7 @@ from scipy.optimize import linear_sum_assignment as linear_assignment
 
 from datasets.dataloader_potsdam import Potsdam, PotsdamDataLoader
 from datasets.dataloader_cocostuff import get_coco_dataloader
-from model import ARSegmentationNet2, init_weights
+from model import ARSegmentationNet1, ARSegmentationNet2, ARSegmentationNet3, ARSegmentationNet4, init_weights
 from loss import MI_loss
 
 def parse_args():
@@ -57,6 +57,12 @@ def parse_args():
         default=2,
         choices=[1,2,3,4],
         help='Number of residual layers in the autoregressive encoder.')
+    parser.add_argument(
+        '--output_stride',
+        type=int,
+        default=2,
+        choices=[2,4],
+        help='Output stride for the convolutional stem')
 
     return parser.parse_args()
 
@@ -100,15 +106,21 @@ def main(ARGS):
         raise ValueError("""Incorrect dataset. Please choose one of:
                 'Potsdam', 'Potsdam3', 'CocoStuff15', 'CocoStuff3'. """)
         
+        
+    if ARGS.output_stride == 2:
+        conv1_stride=1
+    else:
+        conv1_stride=2
+        
     # define model, loss, optimzer
     if ARGS.num_res_layers == 1:
-        model = ARSegmentationNet1(in_channels=in_channels, num_classes=num_classes).to(device)
+        model = ARSegmentationNet1(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
     elif ARGS.num_res_layers == 2:
-        model = ARSegmentationNet2(in_channels=in_channels, num_classes=num_classes).to(device)
+        model = ARSegmentationNet2(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
     elif ARGS.num_res_layers == 3:
-        model = ARSegmentationNet3(in_channels=in_channels, num_classes=num_classes).to(device)
+        model = ARSegmentationNet3(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
     elif ARGS.num_res_layers == 4:
-        model = ARSegmentationNet4(in_channels=in_channels, num_classes=num_classes).to(device)
+        model = ARSegmentationNet4(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
     model.apply(init_weights)
     
     criterion = MI_loss

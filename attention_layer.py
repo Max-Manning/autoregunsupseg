@@ -43,14 +43,14 @@ class attentionLayer(nn.Module):
         
         # get value activations from the queries and keys
         logits = Q.transpose(2,3) @ K
-        weights = F.softmax(logits, dim=-1)
+        activations = F.softmax(logits, dim=-1)
         
         # apply the attention mask to enforce causality
         if (ordering > 0) and (ordering < 9):
-            weights = weights*self.mask[ordering-1,:,:]
+            activations = activations*self.mask[ordering-1,:,:]
         
         # get the output of the attention block
-        o = weights @ V.transpose(2,3)
+        o = activations @ V.transpose(2,3)
         o = self.att_conv(o.reshape((B,self.dv,H,W)))
         
         # concatenate the attention output with the input
@@ -85,6 +85,7 @@ def create_attention_masks(H):
         elif ordering==8:
             a = np.flip(np.rot90(a, 3), 0)  # CCW 270, flip V
         
+        # the order of the pixels for this ordering
         px_ord = a.flatten()
 
         for j in range(H*H):

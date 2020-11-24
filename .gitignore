@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+# Byte-compiled
 __pycache__/
 *.py[cod]
 *$py.class
@@ -10,7 +10,6 @@ __pycache__/
 data/
 input/
 saved/
-datasets/
 external/
 
 # editor, os cache directory

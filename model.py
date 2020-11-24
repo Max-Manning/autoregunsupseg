@@ -5,7 +5,7 @@ from maskedconv import maskedConv2d, shiftedMaskedConv2d
 from attention_layer import attentionLayer
 
 def init_weights(m):
-    '''use apply xavier initialization on model weights'''
+    '''apply xavier initialization on model weights'''
     if type(m) == nn.Conv2d:
         torch.nn.init.xavier_uniform_(m.weight)
         m.bias.data.fill_(0.01)
@@ -17,7 +17,7 @@ class stem(nn.Module):
     ''' The convolutional stem (h)'''
     def __init__(self, in_channels=4, stride=1):
         super().__init__()
-        self.conv = nn.Conv2d(in_channels, 64, kernel_size=3, padding=1, stride=stride) # potsdam RGBIR: 4 input channels
+        self.conv = nn.Conv2d(in_channels, 64, kernel_size=3, padding=1, stride=stride)
         self.bn = nn.BatchNorm2d(64)
         self.pool = nn.MaxPool2d(kernel_size=(3,3), stride=2, padding=1)
         
@@ -99,9 +99,9 @@ class ARSegmentationNet(nn.Module):
     
 class ARSegmentationNet1(nn.Module):
     '''1 residual block, no attention'''
-    def __init__(self, in_channels=3, num_classes=3):
+    def __init__(self, in_channels=3, num_classes=3, stride=1):
         super().__init__()
-        self.stem = stem(in_channels=in_channels)
+        self.stem = stem(in_channels=in_channels, stride=stride)
         self.resblock1 = AR_residual_block(64)
         self.decoder = decoder(128, num_classes)
         
@@ -112,9 +112,9 @@ class ARSegmentationNet1(nn.Module):
     
 class ARSegmentationNet2(nn.Module):
     '''2 residual blocks, no attention'''
-    def __init__(self, in_channels=3, num_classes=3):
+    def __init__(self, in_channels=3, num_classes=3, stride=1):
         super().__init__()
-        self.stem = stem(in_channels=in_channels)
+        self.stem = stem(in_channels=in_channels, stride=stride)
         self.resblock1 = AR_residual_block(64)
         self.resblock2 = AR_residual_block(128)
         self.decoder = decoder(256, num_classes)
@@ -127,9 +127,9 @@ class ARSegmentationNet2(nn.Module):
     
 class ARSegmentationNet3(nn.Module):
     '''3 residual blocks, no attention'''
-    def __init__(self, in_channels=3, num_classes=3):
+    def __init__(self, in_channels=3, num_classes=3, stride=1):
         super().__init__()
-        self.stem = stem(in_channels=in_channels)
+        self.stem = stem(in_channels=in_channels, stride=stride)
         self.resblock1 = AR_residual_block(64)
         self.resblock2 = AR_residual_block(128)
         self.resblock3 = AR_residual_block(256)
@@ -144,9 +144,9 @@ class ARSegmentationNet3(nn.Module):
     
 class ARSegmentationNet4(nn.Module):
     '''4 residual blocks, no attention'''
-    def __init__(self, in_channels=3, num_classes=3):
+    def __init__(self, in_channels=3, num_classes=3, stride=1):
         super().__init__()
-        self.stem = stem(in_channels=in_channels)
+        self.stem = stem(in_channels=in_channels, stride=stride)
         self.resblock1 = AR_residual_block(64)
         self.resblock2 = AR_residual_block(128)
         self.resblock3 = AR_residual_block(256)
