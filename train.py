@@ -7,8 +7,8 @@ from scipy.optimize import linear_sum_assignment as linear_assignment
 
 from datasets.dataloader_potsdam import Potsdam, PotsdamDataLoader
 from datasets.dataloader_cocostuff import get_coco_dataloader
-from model import ARSegmentationNet1, ARSegmentationNet2, ARSegmentationNet3, ARSegmentationNet4, init_weights
-from loss import MI_loss
+from model.model import ARSegmentationNet2, ARSegmentationNet2A, ARSegmentationNet3, ARSegmentationNet3A, ARSegmentationNet4, ARSegmentationNet4A, init_weights
+from model.loss import MI_loss, MI_loss_2
 
 def parse_args():
 
@@ -100,7 +100,7 @@ def main(ARGS):
         training_loader = get_coco_dataloader(ARGS.batch_size, version='CocoStuff3', split='train')
         validation_loader = get_coco_dataloader(ARGS.batch_size, version='CocoStuff3', split='val')
         in_channels = 3
-        num_classes = 3
+        num_classes = 4 # this is confusing since it's called coco-stuff 3
         
     else:
         raise ValueError("""Incorrect dataset. Please choose one of:
@@ -111,16 +111,23 @@ def main(ARGS):
         conv1_stride=1
     else:
         conv1_stride=2
-        
-    # define model, loss, optimzer
-    if ARGS.num_res_layers == 1:
-        model = ARSegmentationNet1(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
-    elif ARGS.num_res_layers == 2:
-        model = ARSegmentationNet2(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
-    elif ARGS.num_res_layers == 3:
-        model = ARSegmentationNet3(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
-    elif ARGS.num_res_layers == 4:
-        model = ARSegmentationNet4(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
+    
+    if ARGS.attention:
+
+        if ARGS.num_res_layers == 2:
+            model = ARSegmentationNet2A(in_channels=in_channels, num_classes=num_classes).to(device)
+        elif ARGS.num_res_layers == 3:
+            model = ARSegmentationNet3A(in_channels=in_channels, num_classes=num_classes).to(device)
+        elif ARGS.num_res_layers == 4:
+            model = ARSegmentationNet4A(in_channels=in_channels, num_classes=num_classes).to(device)
+    else:
+        if ARGS.num_res_layers == 2:
+            model = ARSegmentationNet2(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
+        elif ARGS.num_res_layers == 3:
+            model = ARSegmentationNet3(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
+        elif ARGS.num_res_layers == 4:
+            model = ARSegmentationNet4(in_channels=in_channels, num_classes=num_classes, stride=conv1_stride).to(device)
+
     model.apply(init_weights)
     
     criterion = MI_loss
@@ -153,7 +160,7 @@ def main(ARGS):
             # compute the MI loss between the two outputs
             # loss = criterion(out1, out2) # no spatial invariance (T=0)
             loss = criterion(out1, out2, ARGS.spatial_invariance) # with spatial invariance (T=1)
-
+#             print(model.resblock1.conv1.weight.data.cpu()[0,0,:,:])
             # optimize
             optimizer.zero_grad()
             loss.backward()
@@ -196,7 +203,7 @@ def main(ARGS):
             
         print(f"Epoch {e + 1} pixel accuracy: {accuracy*100:.2f} %")    
         
-    
+    print(f"Saving results for {ARGS.output}")
     model_weights_svname = "saved/" + ARGS.output + ".pth"
     confusion_matrix_svname = "saved/" + ARGS.output + "_confusion_matrix.pkl"
     loss_svname = "saved/" + ARGS.output + "_loss.npy"
@@ -212,6 +219,10 @@ def main(ARGS):
     np.save(loss_svname, losses_train)
 
 if __name__ == "__main__":
+    
+    torch.backends.cudnn.deterministic = True
+    np.random.seed(0)
+    torch.manual_seed(0)
     
     if torch.cuda.is_available():
         device = torch.device("cuda:0")

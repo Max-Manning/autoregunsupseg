@@ -5,18 +5,24 @@ import numpy as np
 
 class attentionLayer(nn.Module):
     '''
-    Single-head self-attention block, similar to what's used in the pixelSNAIL paper
+    Single-head self-attention block. 
     
-    Doesn't seem to work very well, so maybe I implemented it wrong? Who knows.
+    Args:
+        in_channels: Number of channels in the input tensor.
+        dk: number of keys and queries in the self-attention block.
+        dv: number of values in the self attention block
+        H: height of the input image in pixels. This implementation assumes
+            square images. 
+    Returns:
+        Output of the self-attention layer, with the same shape as the input tensor.
     '''
-    def __init__(self, in_channels, dk, dv, H, W):
+    def __init__(self, in_channels, dk, dv, H):
         super().__init__()
         
         self.dk = dk
         self.dv = dv
         
-        # create a mask. Make sure H and W are correct for your input size or you will be sad
-        # also this implementation assumes square images (H==W) so make sure of that
+        # create a mask. Make sure H is correct for your input size or you will be sad
         mask = create_attention_masks(H)     
         self.register_buffer('mask', torch.from_numpy(mask).float())
         
@@ -62,12 +68,13 @@ class attentionLayer(nn.Module):
 def create_attention_masks(H):
     '''creates the attention mask for each ordering'''
     
-    # allocate space
+    # allocate space for the 8 different attention masks,
+    # each having shape (H*H, H*H)
     mask = np.zeros((8, H*H, H*H))
     
-    # create attention masks for each ordering
     for ordering in range(1,9):
         
+        # the default pixel ordering
         a = np.arange(H*H).reshape((H, H))
         
         if ordering == 2:
@@ -89,7 +96,7 @@ def create_attention_masks(H):
         px_ord = a.flatten()
 
         for j in range(H*H):
-            iid = px_ord[:j+1]
+            iid = px_ord[:j+1] # all pixels up to and including the current one
             mask[ordering-1,j,iid] = 1
     
     return mask

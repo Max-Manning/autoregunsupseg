@@ -37,7 +37,7 @@ class Potsdam(Dataset):
         label_path = os.path.join(self.data_path, "gt/" + str(idx) + ".mat")
         
         # load the image
-        img = sio.loadmat(image_path)["img"]
+        img = sio.loadmat(image_path)["img"]/255
         
         # convolutional layers expect channels first format
         # i.e. tensors will have size (batch_size, num_channels, height, width)
