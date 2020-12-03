@@ -8,7 +8,7 @@ from scipy.optimize import linear_sum_assignment as linear_assignment
 from datasets.dataloader_potsdam import Potsdam, PotsdamDataLoader
 from datasets.dataloader_cocostuff import get_coco_dataloader
 from model.model import ARSegmentationNet2, ARSegmentationNet2A, ARSegmentationNet3, ARSegmentationNet3A, ARSegmentationNet4, ARSegmentationNet4A, init_weights
-from model.loss import MI_loss, MI_loss_2
+from model.loss import MI_loss
 
 def parse_args():
 
@@ -25,7 +25,7 @@ def parse_args():
         '--output',
         required=True,
         type=str,
-        help='''Base name for the output files.''')
+        help='''Name for saving the output files''')
     parser.add_argument(
         '--batch_size',
         default=10,
@@ -45,7 +45,7 @@ def parse_args():
         '--attention',
         type=bool,
         default=False,
-        help='Whether to use an attention block.')
+        help='Whether to use an attention layer.')
     parser.add_argument(
         '--epochs',
         type=int,
@@ -145,6 +145,7 @@ def main(ARGS):
         print(f"Starting epoch {e + 1}")
         print("Training ...")
         ## TRAIN ##
+        model.train() # training mode: affects behaviour of batch norm layer
         for batch_idx, data in enumerate(tqdm(training_loader)):
             
             inputs = data.to(device)
@@ -158,9 +159,8 @@ def main(ARGS):
             out2 = model(inputs, o2)
             
             # compute the MI loss between the two outputs
-            # loss = criterion(out1, out2) # no spatial invariance (T=0)
-            loss = criterion(out1, out2, ARGS.spatial_invariance) # with spatial invariance (T=1)
-#             print(model.resblock1.conv1.weight.data.cpu()[0,0,:,:])
+            loss = criterion(out1, out2, ARGS.spatial_invariance)
+            
             # optimize
             optimizer.zero_grad()
             loss.backward()
@@ -172,6 +172,7 @@ def main(ARGS):
         print("Validating ...")
         
         ## VALIDATE ##
+        model.eval() # evaluation mode: affects behaviour of batch norm layer
         for batch_idx, data in enumerate(tqdm(validation_loader)):
             with torch.no_grad():
                 
@@ -202,25 +203,24 @@ def main(ARGS):
         match_matrices.append(confusion_matrix)
             
         print(f"Epoch {e + 1} pixel accuracy: {accuracy*100:.2f} %")    
-        
+    
+
     print(f"Saving results for {ARGS.output}")
     model_weights_svname = "saved/" + ARGS.output + ".pth"
     confusion_matrix_svname = "saved/" + ARGS.output + "_confusion_matrix.pkl"
     loss_svname = "saved/" + ARGS.output + "_loss.npy"
     
-    # save model weights and results
+    # save the model weights, confusion matrix, and training loss
     f = open(confusion_matrix_svname,"wb")
     pickle.dump(match_matrices,f)
     f.close()
-    
     torch.save(model.state_dict(), model_weights_svname)
-    
     losses_train = np.array(losses_train)
     np.save(loss_svname, losses_train)
 
 if __name__ == "__main__":
-    
-    torch.backends.cudnn.deterministic = True
+    # required for reproducibility, but approximately doubles training time
+#     torch.backends.cudnn.deterministic = True
     np.random.seed(0)
     torch.manual_seed(0)
     

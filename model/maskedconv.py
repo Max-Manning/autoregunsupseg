@@ -4,8 +4,7 @@ import torch.nn.functional as F
 
 class shiftedMaskedConv2d(Conv2d):
     ''' 
-    SHIFTED MASKED CONVOLUTION
-
+    Masked convolution implementation.
     '''
     def __init__(self, *args, **kwargs):
         
@@ -16,18 +15,17 @@ class shiftedMaskedConv2d(Conv2d):
         # forward() method since it depends on the selected ordering.
         self.pw = kwargs['kernel_size']//2
         
-        # create a mask
+        # create a mask of the same size as the convolution weights
         self.register_buffer('mask', self.weight.data.clone())
         
         # get the size of the weights
         b,c,h,w = self.weight.size()
         
-        # make the default mask
-        # ordering is applied in the forward method so we don't need
-        # to worry about it here
-        self.mask[:,:,:,:]=1 # set all the mask values to 1
-        # self.mask[:,:,h//2 + self.pw, w//2:] = 0 # no access to center (current) pixel
-        self.mask[:,:,h//2 + self.pw, w//2+1:] = 0 # allow access to center (current) pixel
+        # make the default mask, corresponds to left->right, top->bottom ordering
+        # this mask is transformed in the forward() function in order to obtain the
+        # other orderings.
+        self.mask[:,:,:,:] = 1
+        self.mask[:,:,h//2 + self.pw, w//2+1:] = 0
         
     def forward(self, x, ordering):
         ''' 
@@ -36,9 +34,9 @@ class shiftedMaskedConv2d(Conv2d):
         
         if ordering == 0 (or anything else) no mask is applied. Use this for inference.
         '''
+        
         # depending on the ordering, apply the appropriate padding to the input
         # and get the transformed convolution mask
-        
         if ordering == 1:
             x = F.pad(x, (self.pw,self.pw,2*self.pw,0)) # pad top
             mask = self.mask # no change

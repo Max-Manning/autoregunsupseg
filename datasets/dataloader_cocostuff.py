@@ -95,9 +95,9 @@ def get_coco_dataloader(batch_size, version='CocoStuff3', split='train'):
     
     if version == 'CocoStuff3':
         if split == 'train':
-            data_list_path = '/home/miamanning/unsupseg/datasets/CocoStuff3_file_list_train.txt'
+            data_list_path = '/home/miamanning/unsupseg/datasets/CocoStuff3_file_list_train_5.txt'
         else:
-            data_list_path = '/home/miamanning/unsupseg/datasets/CocoStuff3_file_list_val.txt'
+            data_list_path = '/home/miamanning/unsupseg/datasets/CocoStuff3_file_list_val_5.txt'
     elif version == 'CocoStuff15':
         if split == 'train':
             data_list_path = '/home/miamanning/unsupseg/datasets/CocoStuff15_file_list_train.txt'

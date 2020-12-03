@@ -72,17 +72,41 @@
 # python train.py --dataset Potsdam  --output model_106 --batch_size 10  --learning_rate 4e-5 --epochs 8 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
 
 # python train.py --dataset Potsdam3 --output model_107 --batch_size 18  --learning_rate 1e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
-# python train.py --dataset Potsdam  --output model_108 --batch_size 18  --learning_rate 2e-5 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
-# python train.py --dataset CocoStuff15  --output model_109 --batch_size 30  --learning_rate 2e-5 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
-# python train.py --dataset CocoStuff3  --output model_110 --batch_size 30  --learning_rate 1e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset Potsdam  --output model_108 --batch_size 18  --learning_rate 1e-5 --epochs 20 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# # python train.py --dataset CocoStuff15  --output model_109 --batch_size 30  --learning_rate 1e-5 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset CocoStuff3  --output model_110 --batch_size 30  --learning_rate 1e-6 --epochs 20 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
 
-# python train.py --dataset Potsdam3 --output model_111 --batch_size 10  --learning_rate 1e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
-# python train.py --dataset Potsdam  --output model_112 --batch_size 10  --learning_rate 2e-5 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset Potsdam3 --output model_111 --batch_size 10  --learning_rate 1e-6 --epochs 20 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset Potsdam  --output model_112 --batch_size 10  --learning_rate 2e-5 --epochs 20 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
 
-# python train.py --dataset Potsdam3 --output model_113 --batch_size 18  --learning_rate 1e-7 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
-python train.py --dataset Potsdam  --output model_114 --batch_size 18  --learning_rate 4e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
-# python train.py --dataset CocoStuff15  --output model_115 --batch_size 30  --learning_rate 4e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
-python train.py --dataset CocoStuff3  --output model_116 --batch_size 30  --learning_rate 6e-7 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# # # python train.py --dataset Potsdam3 --output model_113 --batch_size 18  --learning_rate 1e-7 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# # python train.py --dataset Potsdam  --output model_114 --batch_size 18  --learning_rate 4e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# # # python train.py --dataset CocoStuff15  --output model_115 --batch_size 30  --learning_rate 4e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset CocoStuff3  --output model_116 --batch_size 30  --learning_rate 6e-6 --epochs 20 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
 
-python train.py --dataset Potsdam3 --output model_117 --batch_size 10  --learning_rate 1e-7 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
-python train.py --dataset Potsdam  --output model_118 --batch_size 10  --learning_rate 4e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset Potsdam3 --output model_117 --batch_size 10  --learning_rate 1e-7 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset Potsdam  --output model_118 --batch_size 10  --learning_rate 4e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
+
+# python train.py --dataset Potsdam3 --output model_120 --batch_size 18  --learning_rate 1e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset Potsdam  --output model_121 --batch_size 18  --learning_rate 1e-5 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset CocoStuff3  --output model_122 --batch_size 30  --learning_rate 1e-5 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+
+# python train.py --dataset Potsdam3 --output model_123 --batch_size 10  --learning_rate 1e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset Potsdam  --output model_124 --batch_size 10  --learning_rate 1e-5 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
+
+# python train.py --dataset Potsdam3 --output model_125 --batch_size 4  --learning_rate 1e-6 --epochs 10 --num_res_layers 4 --output_stride 2 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset Potsdam  --output model_126 --batch_size 4  --learning_rate 1e-5 --epochs 10 --num_res_layers 4 --output_stride 2 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+
+# python train.py --dataset Potsdam  --output model_127 --batch_size 18  --learning_rate 1e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset CocoStuff3  --output model_128 --batch_size 30  --learning_rate 1e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset CocoStuff15  --output model_129 --batch_size 30  --learning_rate 1e-6 --epochs 4 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset Potsdam  --output model_130 --batch_size 10  --learning_rate 1e-6 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
+
+# python train.py --dataset CocoStuff3  --output model_131 --batch_size 30  --learning_rate 1e-5 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset CocoStuff15  --output model_132 --batch_size 30  --learning_rate 1e-5 --epochs 4 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+# python train.py --dataset Potsdam  --output model_133 --batch_size 10  --learning_rate 1e-5 --epochs 10 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
+
+# python train.py --dataset CocoStuff3  --output model_134 --batch_size 30  --learning_rate 4e-5 --epochs 12 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+python train.py --dataset CocoStuff15  --output model_135 --batch_size 30  --learning_rate 6e-6 --epochs 12 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+python train.py --dataset Potsdam  --output model_136 --batch_size 20  --learning_rate 4e-5 --epochs 20 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 || { echo "oopsie daisies"; exit 1; }
+python train.py --dataset Potsdam  --output model_137 --batch_size 10  --learning_rate 4e-5 --epochs 20 --num_res_layers 4 --output_stride 4 --spatial_invariance 10 --attention True || { echo "oopsie daisies"; exit 1; }
