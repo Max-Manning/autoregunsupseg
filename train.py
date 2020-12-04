@@ -221,8 +221,9 @@ def main(ARGS):
     np.save(loss_svname, losses_train)
 
 if __name__ == "__main__":
+    
     # required for reproducibility, but approximately doubles training time
-#     torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.deterministic = True
     np.random.seed(0)
     torch.manual_seed(0)
     
