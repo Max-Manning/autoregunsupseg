@@ -5,15 +5,10 @@ https://arxiv.org/abs/2007.08247
 #### Requirements
 ```
 numpy
-
 scipy
-
 pytorch 
-
 tqdm
-
 cv2 (only for the Potsdam data preprocessing script)
-
 pillow
 ```
 
