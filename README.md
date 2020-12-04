@@ -3,16 +3,18 @@ Implementation of "Autoregressive Unsupervised Image Segmentation" by Y. Ouali e
 https://arxiv.org/abs/2007.08247
 
 #### Requirements
+``
 `numpy`
 `scipy`
 `pytorch`  
 `tqdm`
 `cv2` (only for the Potsdam data preprocessing script)
 `pillow`
+``
 
 #### Datasets
 
-The Coco-Stuff dataset can be obtained from [here] ( https://github.com/nightrome/cocostuff ). A data request form for downloading the Potsdam dataset can be found [here]( https://www2.isprs.org/commissions/comm2/wg4/benchmark/data-request-form/ ). Run `datasets/potsdam_prepare.py` to preprocess the Potsdam images.
+The Coco-Stuff dataset can be obtained from [here]( https://github.com/nightrome/cocostuff ). A data request form for downloading the Potsdam dataset can be found [here]( https://www2.isprs.org/commissions/comm2/wg4/benchmark/data-request-form/ ). Run `datasets/potsdam_prepare.py` to preprocess the Potsdam images.
  
 #### Usage
 
