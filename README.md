@@ -3,7 +3,7 @@ Implementation of "Autoregressive Unsupervised Image Segmentation" by Y. Ouali e
 https://arxiv.org/abs/2007.08247
 
 #### Requirements
-``
+```
 numpy
 
 scipy
@@ -15,7 +15,7 @@ tqdm
 cv2 (only for the Potsdam data preprocessing script)
 
 pillow
-``
+```
 
 #### Datasets
 
