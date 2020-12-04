@@ -25,7 +25,7 @@ class ARSegmentationNet2(nn.Module):
         return self.decoder(x)
     
 class ARSegmentationNet2A(nn.Module):
-    '''2 residual blocks, no attention'''
+    '''2 residual blocks, with attention'''
     def __init__(self, in_channels=3, num_classes=3):
         super().__init__()
         self.stem = stem(in_channels=in_channels, stride=2)
@@ -59,7 +59,7 @@ class ARSegmentationNet3(nn.Module):
         return self.decoder(x)
     
 class ARSegmentationNet3A(nn.Module):
-    '''3 residual blocks, no attention'''
+    '''3 residual blocks, with attention'''
     def __init__(self, in_channels=3, num_classes=3):
         super().__init__()
         self.stem = stem(in_channels=in_channels, stride=2)
@@ -98,7 +98,7 @@ class ARSegmentationNet4(nn.Module):
 
 
 class ARSegmentationNet4A(nn.Module):
-    '''3 residual blocks, no attention'''
+    '''4 residual blocks, with attention'''
     def __init__(self, in_channels=3, num_classes=3):
         super().__init__()
         self.stem = stem(in_channels=in_channels, stride=2)

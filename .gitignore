@@ -1,7 +1,5 @@
 # Byte-compiled
 __pycache__/
-*.py[cod]
-*$py.class
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -9,8 +7,9 @@ __pycache__/
 # input data, saved log, checkpoints
 data/
 input/
-saved/*
+saved/
 external/
+notebooks/
 
 # editor, os cache directory
 .vscode/
