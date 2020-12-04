@@ -91,27 +91,27 @@ class CocoDataLoader(DataLoader):
         }
         super().__init__(sampler=self.sampler, **self.init_kwargs)
         
-def get_coco_dataloader(batch_size, version='CocoStuff3', split='train'):
+def get_coco_dataloader(batch_size, base_path, version='CocoStuff3', split='train'):
     
     if version == 'CocoStuff3':
         if split == 'train':
-            data_list_path = '/home/miamanning/unsupseg/datasets/CocoStuff3_file_list_train_5.txt'
+            data_list_path = 'datasets/CocoStuff_file_list_train.txt'
         else:
-            data_list_path = '/home/miamanning/unsupseg/datasets/CocoStuff3_file_list_val_5.txt'
+            data_list_path = 'datasets/CocoStuff_file_list_val.txt'
     elif version == 'CocoStuff15':
         if split == 'train':
-            data_list_path = '/home/miamanning/unsupseg/datasets/CocoStuff15_file_list_train.txt'
+            data_list_path = 'datasets/CocoStuff_file_list_train.txt'
         else:
-            data_list_path = '/home/miamanning/unsupseg/datasets/CocoStuff15_file_list_val.txt'
+            data_list_path = 'datasets/CocoStuff_file_list_val.txt'
     else:
         raise ValueError("Unknown dataset version.")
     
     if split == 'train':
-        data_path = '/mnt/D2/Data/CocoStuff164k/images/train2017/'
-        label_path = '/mnt/D2/Data/CocoStuff164k/annotations/train2017/'
+        data_path = base_path + 'images/train2017/'
+        label_path = base_path + 'annotations/train2017/'
     else:
-        data_path = '/mnt/D2/Data/CocoStuff164k/images/val2017/'
-        label_path = '/mnt/D2/Data/CocoStuff164k/annotations/val2017/'
+        data_path = base_path + 'images/val2017/'
+        label_path = base_path + 'annotations/val2017/'
         
     cropsize = 128
         

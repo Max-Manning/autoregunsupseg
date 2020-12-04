@@ -9,7 +9,7 @@ __pycache__/
 # input data, saved log, checkpoints
 data/
 input/
-saved/
+saved/*
 external/
 
 # editor, os cache directory

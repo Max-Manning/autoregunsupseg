@@ -91,14 +91,16 @@ def main(ARGS):
         num_classes = 3
         
     elif ARGS.dataset == 'CocoStuff15':
-        training_loader = get_coco_dataloader(ARGS.batch_size, version='CocoStuff15', split='train')
-        validation_loader = get_coco_dataloader(ARGS.batch_size, version='CocoStuff15', split='val')
+        base_path = '/mnt/D2/Data/CocoStuff164k/'
+        training_loader = get_coco_dataloader(ARGS.batch_size, base_path, version='CocoStuff15', split='train')
+        validation_loader = get_coco_dataloader(ARGS.batch_size, base_path,  version='CocoStuff15', split='val')
         in_channels = 3
         num_classes = 15
         
     elif ARGS.dataset == 'CocoStuff3':
-        training_loader = get_coco_dataloader(ARGS.batch_size, version='CocoStuff3', split='train')
-        validation_loader = get_coco_dataloader(ARGS.batch_size, version='CocoStuff3', split='val')
+        base_path = '/mnt/D2/Data/CocoStuff164k/'
+        training_loader = get_coco_dataloader(ARGS.batch_size, base_path, version='CocoStuff3', split='train')
+        validation_loader = get_coco_dataloader(ARGS.batch_size, base_path, version='CocoStuff3', split='val')
         in_channels = 3
         num_classes = 4 # this is confusing since it's called coco-stuff 3
         
