@@ -1,6 +1,8 @@
-Implementation of "Autoregressive Unsupervised Image Segmentation" by Y. Ouali et. al., ECCV 2020.
+Implementation of "Autoregressive Unsupervised Image Segmentation" by Y. Ouali et. al., ECCV 2020. 
 
 https://arxiv.org/abs/2007.08247
+
+Note that I am not affiliated with the original authors, this is my best attempt at reproducing the method based on the text in the paper.
 
 #### Requirements
 ```
