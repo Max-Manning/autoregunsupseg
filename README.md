@@ -2,7 +2,7 @@ Implementation of "Autoregressive Unsupervised Image Segmentation" by Y. Ouali e
 
 https://arxiv.org/abs/2007.08247
 
-Note that I am not affiliated with the original authors, this is my best attempt at reproducing the method based on the text in the paper.
+Note that I am not affiliated with the original authors, this is my best attempt at reproducing the method based on the text in the paper. While the basic method implemented here follows the paper (to the best of my knowledge), this code should not be used for benchmarking or performance comparisons.
 
 #### Requirements
 ```
